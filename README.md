@@ -1,4 +1,3 @@
-
 ## OAE Fabric
 
 Deployment.. well, upgrade.. tools for Apereo OAE.
@@ -54,7 +53,7 @@ Available commands:
 
 ## Setup Notes
 
-1. This depends on the fact that you have a puppet installation deploying release tarballs to the app / activity / pp servers. The upgrade process essentially:
+1. This depends on the assumption that you have a puppet installation deploying release tarballs to the app / activity / pp servers. The upgrade process essentially:
     ** Delete the `/opt/3akai-ux` and `/opt/oae` directories
     ** Run puppet -- puppet will notice the directories aren't there and will deploy the new version. It will deploy whichever release is current in the puppet deployment, so ensure you first upgrade the release version in puppet.
 2. All commands are invoked with `sudo` with whatever target user you authenticate as. This means that authenticating with `root` won't work. You must log in as a user with sudo privileges
