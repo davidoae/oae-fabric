@@ -13,15 +13,23 @@ Deployment.. well, upgrade.. tools for Apereo OAE.
 ### Clone this repository
 
 ```
-$ git clone https://github.com/mrvisser/oae-fabric.git
-$ cd oae-fabric
+~$ git clone https://github.com/mrvisser/oae-fabric.git
+~$ cd oae-fabric
+```
+
+### A bit of configuration
+
+**Create ~/.fabricrc:**
+```
+hilary_dir=/opt/oae
+ui_dir=/opt/3akai-ux
 ```
 
 ## What you can do
 
 **All the tasks:**
 ```
-$ fab --list
+~/oae-fabric$ fab --list
 Available commands:
 
     purge_clean_backup         Clean out any code backups that may have been made for hilary and the ui.
@@ -41,7 +49,7 @@ Available commands:
 
 **Upgrade a single server:**
 ```
-$ fab upgrade -H app0
+~/oae-fabric$ fab upgrade -H app0
 ```
 
 ## Setup Notes
