@@ -18,11 +18,16 @@ Deployment.. well, upgrade.. tools for Apereo OAE.
 
 ### A bit of configuration
 
-**Create ~/.fabricrc:**
+**Optionally create ~/.fabricrc:**
 ```
 hilary_dir=/opt/oae
 ui_dir=/opt/3akai-ux
+hilary_check_host=localhost
+hilary_check_host_header=admin.oaeproject.org
+hilary_check_port=2000
 ```
+
+All values specified in the example are default values if the configuration property is not specified.
 
 ## What you can do
 
@@ -31,24 +36,29 @@ ui_dir=/opt/3akai-ux
 ~/oae-fabric$ fab --list
 Available commands:
 
-    purge_clean_backup         Clean out any code backups that may have been made for hilary and the ui.
-    upgrade                    Upgrade the hilary servers to the version configured in puppet. This will:
-    hilary.clean               Remove all the code from the deployed OAE ui directory.
-    hilary.purge_clean_backup  Remove the backup directory created as a result of cleaning.
-    hilary.start               Start the hilary service.
-    hilary.stop                Stop the hilary service.
-    hilary.version             Determine the installed version of hilary.
-    puppet.run                 Immediately start a puppet run.
-    puppet.start               Start the puppet agent service.
-    puppet.stop                Stop puppet and optionally any active puppet runs.
-    ui.clean                   Remove all the code from the deployed OAE ui directory.
-    ui.purge_clean_backup      Remove the backup directory created as a result of cleaning.
-    ui.version                 Determine the installed version of the ui.
+    upgrade                  Upgrade all hilary servers and nginx to the version configured in puppet.
+    upgrade_hilary_host      Upgrade the hilary servers to the version configured in puppet. This will:
+    hilary.clean             Remove all the code from the deployed OAE hilary directory and its code backup directory.
+    hilary.start             Start the hilary service.
+    hilary.stop              Stop the hilary service.
+    hilary.version           Determine the installed version of hilary.
+    hilary.wait_until_ready  Wait until the application server is ready to handle requests.
+    puppet.run               Immediately start a puppet run.
+    puppet.start             Start the puppet agent service.
+    puppet.stop              Stop puppet and optionally any active puppet runs.
+    ui.clean                 Remove all the code from the deployed OAE ui directory.
+    ui.version               Determine the installed version of the ui.
+
 ```
 
-**Upgrade a single server:**
+**Upgrade all servers in a safe way as per your oae_env.py file:**
 ```
-~/oae-fabric$ fab upgrade -H app0
+~/oae-fabric$ fab upgrade
+```
+
+**Upgrade a specific list of hilary servers in parallel:**
+```
+~/oae-fabric$ fab upgrade_hilary_host -H app0,app1 -P
 ```
 
 ## Setup Notes
@@ -61,7 +71,7 @@ Available commands:
 
 ## License
 
-Copyright 2013 Apereo Foundation (AF) Licensed under the
+Copyright 2014 Apereo Foundation (AF) Licensed under the
 Educational Community License, Version 2.0 (the "License"); you may
 not use this file except in compliance with the License. You may
 obtain a copy of the License at
