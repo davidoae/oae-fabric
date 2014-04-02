@@ -24,14 +24,19 @@ def stop(force=True):
         # running. If it isn't 0, we need to pkill them
         if not sudo('pgrep puppet -c', warn_only=True).startswith("0"):
             sudo('pkill puppet', warn_only=True)
-            sleep(5)
+            sleep(10)
 
             # If 5 seconds wasn't enough to kill the active runs, continue
             # pkill'ing and waiting 1 second each iteration
             while not sudo('pgrep puppet -c', warn_only=True).startswith("0"):
                 print 'Puppet is still running, trying to kill it again'
                 sudo('pkill puppet', warn_only=True)
-                sleep(1)
+                sleep(5)
+
+            # If we had to run a kill operation, there's a possibility we double-
+            # killed and left a lock file. Ensure that file is removed so puppet
+            # can be run
+            sudo('rm /var/lib/puppet/state/agent_catalog_run.lock', warn_only=True)
 
 
 @task
