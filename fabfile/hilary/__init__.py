@@ -28,7 +28,7 @@ def clean():
 @task
 def version():
     """Determine the installed version of hilary."""
-    sudo("cat /opt/oae/build-info.json")
+    sudo("cat %s/build-info.json" % hilary_dir())
 
 
 @task

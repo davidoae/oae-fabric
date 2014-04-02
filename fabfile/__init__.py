@@ -1,6 +1,7 @@
-from fabric.api import cd, env, runs_once, sudo, task
+from fabric.api import cd, env, runs_once, settings, sudo, task
 from fabric.tasks import execute
 from getpass import getpass
+import etherpad
 import hilary
 import oae_env
 import puppet
@@ -11,9 +12,13 @@ if len(env.hosts) == 0:
     env.hosts = ["localhost"]
 
 
+##
+# OAE UPGRADES
+##
+
 @runs_once
 @task
-def upgrade():
+def upgrade_oae():
     """Upgrade all hilary servers and nginx to the version configured in puppet.
 
        This will:
@@ -84,11 +89,12 @@ def upgrade_hilary_host(parallel=True):
 
        This will:
 
-        1.  Forcefully stop puppet and any runs that are currently happening
-        2.  Stop the hilary service
-        3.  Back up the hilary app dir to /tmp/hilary_backup
-        4.  Back up the ui app dir to /tmp/ui_backup
-        5.  Run puppet, which should notice the missing directories and repopulate them with the
+        1.  Ask for a password with which to sudo. All servers must have the same sudo passowrd.
+        2.  Forcefully stop puppet and any runs that are currently happening
+        3.  Stop the hilary service
+        4.  Back up the hilary app dir to /tmp/hilary_backup
+        5.  Back up the ui app dir to /tmp/ui_backup
+        6.  Run puppet, which should notice the missing directories and repopulate them with the
             configured (updated) version of the packages
     """
     ensure_sudo_pass()
@@ -109,6 +115,67 @@ def upgrade_hilary_host_internal():
     puppet.run(force=False)
     puppet.start()
     hilary.wait_until_ready()
+
+
+##
+# ETHERPAD UPGRADE
+##
+
+@runs_once
+@task
+def upgrade_etherpad():
+    """Upgrade all Etherpad servers to the version configured in puppet.
+
+       This will:
+
+        1.  Ask for a password with which to sudo. All servers must have the same sudo passowrd
+        2.  Perform a git pull on the puppet node to get the latest configuration
+        3.  On each etherpad host:
+              a. Forcefully stop puppet on the etherpad hosts and cancel any runs that are currently happening
+              b. Stop the etherpad services
+              c. Back up the etherpad dir to /tmp/etherpad_backup
+              d. Run puppet, which should notice the missing directory and repopulate it with the configured
+                 (updated) version of the package
+    """
+    ensure_sudo_pass()
+
+    # Pull the updated puppet data
+    with settings(hosts=[oae_env.puppet_host()]):
+        with cd('/etc/puppet/puppet-hilary'):
+            sudo('git pull')
+
+    # Run all etherpad upgrades in parallel
+    with settings(hosts=oae_env.etherpad_hosts(), parallel=True):
+        execute(upgrade_etherpad_host_internal)
+
+
+@runs_once
+@task
+def upgrade_etherpad_host(parallel=True):
+    """Upgrade the etherpad servers to the version configured in puppet.
+
+       This will:
+
+        1.  Ask for a password with which to sudo. All servers must have the same sudo passowrd.
+        2.  Forcefully stop puppet and any runs that are currently happening
+        3.  Stop the etherpad service
+        4.  Back up the hilary app dir to /tmp/hilary_backup
+        5.  Back up the ui app dir to /tmp/ui_backup
+        6.  Run puppet, which should notice the missing directories and repopulate them with the
+            configured (updated) version of the packages
+    """
+    ensure_sudo_pass()
+
+    with settings(parallel=(parallel != "False")):
+        execute(upgrade_etherpad_host_internal)
+
+
+def upgrade_etherpad_host_internal():
+    puppet.stop(force=True)
+    etherpad.stop()
+    etherpad.clean()
+    puppet.run(force=False)
+    puppet.start()
 
 
 def ensure_sudo_pass():

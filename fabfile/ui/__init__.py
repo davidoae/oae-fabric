@@ -15,7 +15,7 @@ def clean():
 @task
 def version():
     """Determine the installed version of the ui."""
-    sudo("cat /opt/3akai-ux/build-info.json")
+    sudo("cat %s/build-info.json" % ui_dir())
 
 
 def ui_dir():
