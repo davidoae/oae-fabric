@@ -50,36 +50,34 @@ def upgrade_oae():
     app = oae_env.app_hosts()
 
     # Stop puppet on the web node
-    env.hosts = [oae_env.web_host()]
-    execute(puppet.stop, force=True)
+    with settings(hosts=[oae_env.web_host()]):
+        execute(puppet.stop, force=True)
 
     # Pull the updated puppet data
-    env.hosts = [oae_env.puppet_host()]
-    with cd('/etc/puppet/puppet-hilary'):
-        sudo('git pull')
+    with settings(hosts=[oae_env.puppet_host()]):
+        with cd('/etc/puppet/puppet-hilary'):
+            sudo('git pull')
 
     # Run all batches of host upgrades in parallel
-    env.parallel = True
-
-    env.hosts = pp[0:1]
-    execute(upgrade_hilary_host_internal)
+    with settings(hosts=pp[0:1], parallel=True):
+        execute(upgrade_hilary_host_internal)
 
     # Do the rest of the PP nodes, and only half of the app nodes
-    env.hosts = pp[1:] + activity + app[:len(app) / 2]
-    execute(upgrade_hilary_host_internal)
+    with settings(hosts=pp[1:] + activity + app[:len(app) / 2], parallel=True):
+        execute(upgrade_hilary_host_internal)
 
     # Upgrade the web node
-    env.hosts = [oae_env.web_host()]
-    execute(puppet.run)
+    with settings(hosts=[oae_env.web_host()]):
+        execute(puppet.run)
 
     # If there was more than one app node, upgrade the other half of the app nodes
     if len(app) > 1:
-        env.hosts = app[len(app) / 2:]
-        execute(upgrade_hilary_host_internal)
+        with settings(hosts=app[len(app) / 2:], parallel=True):
+            execute(upgrade_hilary_host_internal)
 
     # Enable puppet on the web node
-    env.hosts = [oae_env.web_host()]
-    execute(puppet.start)
+    with settings(hosts=[oae_env.web_host()]):
+        execute(puppet.start)
 
 
 @runs_once
