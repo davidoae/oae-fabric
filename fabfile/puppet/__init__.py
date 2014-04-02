@@ -33,10 +33,8 @@ def stop(force=True):
                 sudo('pkill puppet', warn_only=True)
                 sleep(5)
 
-            # If we had to run a kill operation, there's a possibility we double-
-            # killed and left a lock file. Ensure that file is removed so puppet
-            # can be run
-            sudo('rm /var/lib/puppet/state/agent_catalog_run.lock', warn_only=True)
+        # Ensure that lock file is removed so puppet can be run
+        sudo('rm /var/lib/puppet/state/agent_catalog_run.lock', warn_only=True)
 
 
 @task
