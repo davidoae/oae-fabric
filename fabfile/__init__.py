@@ -1,4 +1,4 @@
-from fabric.api import cd, env, runs_once, settings, sudo, task
+from fabric.api import env, runs_once, settings, sudo, task
 from fabric.tasks import execute
 from getpass import getpass
 import etherpad
@@ -55,8 +55,7 @@ def upgrade_oae():
 
     # Pull the updated puppet data
     with settings(hosts=[oae_env.puppet_host()]):
-        with cd('/etc/puppet/puppet-hilary'):
-            sudo('git pull')
+        execute(puppet.git_update)
 
     # Run all batches of host upgrades in parallel
     with settings(hosts=pp[0:1], parallel=True):
@@ -139,8 +138,7 @@ def upgrade_etherpad():
 
     # Pull the updated puppet data
     with settings(hosts=[oae_env.puppet_host()]):
-        with cd('/etc/puppet/puppet-hilary'):
-            sudo('git pull')
+        execute(puppet.git_update)
 
     # Run all etherpad upgrades in parallel
     with settings(hosts=oae_env.etherpad_hosts(), parallel=True):

@@ -1,5 +1,5 @@
 from time import sleep
-from fabric.api import task
+from fabric.api import cd, task
 from fabric.operations import sudo
 from fabric.tasks import execute
 
@@ -63,3 +63,11 @@ def run(force=True):
     # Start puppet back up if we forcefully stopped it
     if force:
         sudo('service puppet start')
+
+
+@task
+def git_update():
+    """Pull the updated code from git."""
+
+    with cd('/etc/puppet/puppet-hilary'):
+        sudo('git pull')
