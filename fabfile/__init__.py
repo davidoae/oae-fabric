@@ -74,10 +74,6 @@ def upgrade_oae():
         with settings(hosts=app[len(app) / 2:], parallel=True):
             execute(upgrade_hilary_host_internal)
 
-    # Enable puppet on the web node
-    with settings(hosts=[oae_env.web_host()]):
-        execute(puppet.start)
-
 
 @runs_once
 @task
@@ -115,7 +111,7 @@ def upgrade_hilary_host_internal():
 
 
 ##
-# ETHERPAD UPGRADE
+# ETHERPAD UPGRADES
 ##
 
 @runs_once
