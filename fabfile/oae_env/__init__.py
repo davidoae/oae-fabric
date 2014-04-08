@@ -21,4 +21,4 @@ def puppet_host():
 
 
 def web_host():
-    return "web0"
+    return "web1"
