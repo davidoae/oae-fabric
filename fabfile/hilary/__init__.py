@@ -38,10 +38,10 @@ def wait_until_ready():
     curl = "curl -s -w \"%%{http_code}\" -H\"Host: %s\" -o /dev/null http://%s:%s/api/me" % (check_host_header(), check_host(), check_port())
 
     # See if /api/me returns the proper output
-    if not run(curl) == '200':
+    if not run(curl, warn_only=True) == '200':
         sleep(1)
 
-        while not run(curl) == '200':
+        while not run(curl, warn_only=True) == '200':
             sleep(1)
 
 
