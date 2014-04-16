@@ -1,6 +1,7 @@
 from fabric.api import env, runs_once, settings, sudo, task
 from fabric.tasks import execute
 from getpass import getpass
+import db
 import etherpad
 import hilary
 import oae_env
