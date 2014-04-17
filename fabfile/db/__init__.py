@@ -33,23 +33,12 @@ def wait_until_ready():
 
 
 @task
-def drain():
-    """Drain the commitlog of the database."""
-    sudo("nodetool drain")
-
-
-@task
 def upgradesstables():
-    """Upgrade the SSTables of the database."""
+    """Run the nodetool upgradesstables process."""
     sudo("nodetool upgradesstables")
 
 
 @task
-def upgrade_reboot():
-    """Perform a reboot of the database for purposes of performing a version
-    upgrade."""
-    drain()
-    stop()
-    start()
-    wait_until_ready()
-    upgradesstables()
+def drain():
+    """Drain the commitlog of the database."""
+    sudo("nodetool drain")
