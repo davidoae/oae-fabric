@@ -25,10 +25,10 @@ def wait_until_ready():
     cqlsh = "cqlsh -3 -f /tmp/test_availability.cql3"
 
     # Keep trying to run the script until it is successful
-    if not run(cqlsh, warn_only=True).code == 0:
+    if run(cqlsh, warn_only=True).failed:
         sleep(1)
 
-        while not run(cqlsh, warn_only=True).code == 0:
+        while run(cqlsh, warn_only=True).failed:
             sleep(1)
 
 
