@@ -8,6 +8,32 @@ __all__ = ["upgrade", "upgrade_host"]
 
 @runs_once
 @task
+def reboot():
+    """Perform a rolling reboot of all the Hilary nodes across the cluster."""
+    cluster_util.ensure_sudo_pass()
+
+    pp = cluster_hosts.pp()
+    activity = cluster_hosts.activity()
+    app = cluster_hosts.app()
+
+    # Reboot one node first to make sure it comes up successfully
+    with settings(hosts=pp[0:1]):
+        execute(reboot_host_internal)
+
+    # Reboot all but half the application nodes and make sure they come up
+    # successfully
+    with settings(hosts=pp[1:] + activity + app[:len(app) / 2], parallel=True):
+        execute(reboot_host_internal)
+
+    # If there was more than one app node, reboot the other half of the app
+    # nodes
+    if len(app) > 1:
+        with settings(hosts=app[len(app) / 2:], parallel=True):
+            execute(reboot_host_internal)
+
+
+@runs_once
+@task
 def upgrade():
     """Upgrade all hilary servers and nginx to the version configured in
     puppet.
@@ -53,7 +79,7 @@ def upgrade():
     with settings(hosts=[cluster_hosts.puppet()]):
         execute(puppet.git_update)
 
-    # Run all batches of host upgrades in parallel
+    # Upgrade one PP node and see if it comes back up
     with settings(hosts=pp[0:1], parallel=True):
         execute(upgrade_host_internal)
 
@@ -106,4 +132,10 @@ def upgrade_host_internal():
     ui.clean()
     puppet.run(force=False)
     puppet.start()
+    hilary.wait_until_ready()
+
+
+def reboot_host_internal():
+    hilary.stop()
+    hilary.start()
     hilary.wait_until_ready()
