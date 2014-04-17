@@ -8,6 +8,17 @@ __all__ = ["upgrade", "upgrade_host"]
 
 @runs_once
 @task
+def reboot():
+    """Reboot all the etherpad servers."""
+    cluster_util.ensure_sudo_pass()
+
+    with settings(hosts=cluster_hosts.etherpad()):
+        execute(etherpad.stop)
+        execute(etherpad.start)
+
+
+@runs_once
+@task
 def upgrade():
     """Upgrade all Etherpad servers to the version configured in puppet.
 
