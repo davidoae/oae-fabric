@@ -22,7 +22,8 @@ def reboot():
 
     # Reboot all but half the application nodes and make sure they come up
     # successfully
-    with settings(hosts=pp[1:] + activity + app[:len(app) / 2], parallel=True):
+    with settings(hosts=pp[1:] + activity + app[:max(1, len(app) / 2)],
+        parallel=True):
         execute(reboot_host_internal)
 
     # If there was more than one app node, reboot the other half of the app
@@ -84,7 +85,8 @@ def upgrade():
         execute(upgrade_host_internal)
 
     # Do the rest of the PP nodes, and only half of the app nodes
-    with settings(hosts=pp[1:] + activity + app[:len(app) / 2], parallel=True):
+    with settings(hosts=pp[1:] + activity + app[:max(1, len(app) / 2)],
+        parallel=True):
         execute(upgrade_host_internal)
 
     # Upgrade the web node
