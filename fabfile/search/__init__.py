@@ -28,7 +28,7 @@ def restart():
 def wait_until_ready():
     """Wait until search is ready to handle requests."""
 
-    curl = "curl -s -w \"%%{http_code}\" -o /dev/null http://localhost:9200/"
+    curl = "curl -s -w \"%{http_code}\" -o /dev/null http://localhost:9200/"
 
     # Keep requesting until ElasticSearch returns a 200 response
     if not run(curl, warn_only=True) == '200':
