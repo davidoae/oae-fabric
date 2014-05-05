@@ -5,13 +5,13 @@ from fabric.operations import run, sudo
 
 @task
 def start():
-    """Start the etherpad service."""
+    """Start the database service."""
     sudo("service dse start")
 
 
 @task
 def stop():
-    """Stop the etherpad service."""
+    """Stop the database service."""
     sudo("service dse stop", warn_only=True)
 
 

@@ -24,5 +24,9 @@ def puppet():
     return "puppet"
 
 
+def search():
+    return ["search0", "search1"]
+
+
 def web():
     return "web1"

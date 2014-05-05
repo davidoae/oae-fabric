@@ -34,7 +34,6 @@ def version():
 @task
 def wait_until_ready():
     """Wait until the application server is ready to handle requests."""
-
     curl = "curl -s -w \"%%{http_code}\" -H\"Host: %s\" -o /dev/null http://%s:%s/api/me" % (check_host_header(), check_host(), check_port())
 
     # See if /api/me returns the proper output

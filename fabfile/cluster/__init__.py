@@ -1,1 +1,1 @@
-import db, etherpad, oae
+import db, etherpad, oae, search
