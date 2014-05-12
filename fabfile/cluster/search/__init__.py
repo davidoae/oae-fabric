@@ -1,7 +1,7 @@
 from fabric.api import runs_once, settings, task
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
-from ... import puppet, search
+from ... import puppet, search, hilary
 
 __all__ = ["upgrade", "upgrade_host"]
 
