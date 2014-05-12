@@ -37,7 +37,7 @@ def upgrade():
 
     # Remove the ES index
     with settings(hosts=cluster_hosts.search(), parallel=True):
-        execute(search.clear_data, force=False)
+        execute(search.clear_data)
 
     # Run puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
