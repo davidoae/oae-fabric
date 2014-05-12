@@ -30,6 +30,10 @@ def upgrade():
     with settings(hosts=[cluster_hosts.puppet()], parallel=True):
         execute(puppet.git_update)
 
+    # Remove the ES index
+    with settings(hosts=cluster_hosts.search(), parallel=True):
+        execute(search.clear_data, force=False)
+
     # Run puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(puppet.run, force=False)
