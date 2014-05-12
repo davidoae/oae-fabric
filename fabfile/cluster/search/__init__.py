@@ -30,6 +30,11 @@ def upgrade():
     with settings(hosts=[cluster_hosts.puppet()], parallel=True):
         execute(puppet.git_update)
 
+    # Do a full search cluster reboot. We bring the full cluster
+    # down as a rule since ES has gossip and sometimes requires it
+    with settings(hosts=cluster_hosts.search(), parallel=True):
+        execute(search.stop)
+
     # Remove the ES index
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(search.clear_data, force=False)
@@ -38,10 +43,8 @@ def upgrade():
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(puppet.run, force=False)
 
-    # Do a full search cluster reboot. We bring the full cluster
-    # down as a rule since ES has gossip and sometimes requires it
+    # Bring the cluster back up
     with settings(hosts=cluster_hosts.search(), parallel=True):
-        execute(search.stop)
         execute(search.start)
 
     # Start puppet on the search nodes
