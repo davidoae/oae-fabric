@@ -8,7 +8,7 @@ __all__ = ["upgrade", "upgrade_host"]
 
 @runs_once
 @task
-def upgrade():
+def upgrade(restart_app_node=True):
     """Runs through a general upgrade procedure for all known search nodes.
 
         This will:
@@ -17,8 +17,11 @@ def upgrade():
                 the same sudo passowrd
             2.  Perform a git pull on the puppet node to get the latest
                 configuration
-            3.  Run puppet on each search node
-            4.  Do a full restart of all the search servers
+            3.  Bring down the entire search cluster
+            4.  Remove the ES index data
+            5.  Run puppet on each search node
+            6.  Bring the cluster back up
+            7.  Restart an app node so the search mapping can be restored (can be skipped by setting restart_app_node to `False`)
     """
     cluster_util.ensure_sudo_pass()
 
@@ -46,6 +49,12 @@ def upgrade():
     # Bring the cluster back up
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(search.start)
+
+    if restart_app_node:
+        # Restart an app node so the search mapping can be reset
+        with settings(hosts=[cluster_hosts.app()[0]], parallel=True):
+            execute(hilary.stop)
+            execute(hilary.start)
 
     # Start puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
