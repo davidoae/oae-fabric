@@ -36,18 +36,41 @@ All values specified in the example are default values if the configuration prop
 ~/oae-fabric$ fab --list
 Available commands:
 
-    upgrade                  Upgrade all hilary servers and nginx to the version configured in puppet.
-    upgrade_hilary_host      Upgrade the hilary servers to the version configured in puppet. This will:
-    hilary.clean             Remove all the code from the deployed OAE hilary directory and its code backup directory.
-    hilary.start             Start the hilary service.
-    hilary.stop              Stop the hilary service.
-    hilary.version           Determine the installed version of hilary.
-    hilary.wait_until_ready  Wait until the application server is ready to handle requests.
-    puppet.run               Immediately start a puppet run.
-    puppet.start             Start the puppet agent service.
-    puppet.stop              Stop puppet and optionally any active puppet runs.
-    ui.clean                 Remove all the code from the deployed OAE ui directory.
-    ui.version               Determine the installed version of the ui.
+    cluster.db.upgrade             Runs through a general upgrade procedure for a set of Cassandra nodes.
+    cluster.db.upgrade_host        Run through the general upgrade procedure for a Cassandra node, assuming
+    cluster.etherpad.reboot        Reboot all the etherpad servers.
+    cluster.etherpad.upgrade       Upgrade all Etherpad servers to the version configured in puppet.
+    cluster.etherpad.upgrade_host  Upgrade the etherpad servers to the version configured in puppet.
+    cluster.oae.reboot             Perform a rolling reboot of all the Hilary nodes across the cluster.
+    cluster.oae.upgrade            Upgrade all hilary servers and nginx to the version configured in
+    cluster.oae.upgrade_host       Upgrade the hilary servers to the version configured in puppet.
+    cluster.search.upgrade         Runs through a general upgrade procedure for all known search nodes.
+    cluster.search.upgrade_host    Run through the general upgrade procedure for a search node, assuming
+    db.drain                       Drain the commitlog of the database.
+    db.start                       Start the database service.
+    db.stop                        Stop the database service.
+    db.upgradesstables             Run the nodetool upgradesstables process.
+    db.wait_until_ready            Wait until the database is ready to handle requests.
+    etherpad.clean                 Remove all the code from the deployed etherpad directory and its code backup directory.
+    etherpad.start                 Start the etherpad service.
+    etherpad.stop                  Stop the etherpad service.
+    etherpad.version               Determine the installed version of etherpad.
+    hilary.clean                   Remove all the code from the deployed OAE hilary directory and its code backup directory.
+    hilary.start                   Start the hilary service.
+    hilary.stop                    Stop the hilary service.
+    hilary.version                 Determine the installed version of hilary.
+    hilary.wait_until_ready        Wait until the application server is ready to handle requests.
+    puppet.git_update              Pull the updated code from git.
+    puppet.run                     Immediately start a puppet run.
+    puppet.start                   Start the puppet agent service.
+    puppet.stop                    Stop puppet and optionally any active puppet runs.
+    search.restart                 Restart the search service.
+    search.start                   Start the search service.
+    search.stop                    Stop the search service.
+    search.wait_until_ready        Wait until search is ready to handle requests.
+    search.wait_until_stopped      Wait until search has been fully stopped.
+    ui.clean                       Remove all the code from the deployed OAE ui directory.
+    ui.version                     Determine the installed version of the ui.
 
 ```
 

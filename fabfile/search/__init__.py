@@ -23,6 +23,11 @@ def restart():
     stop()
     start()
 
+@task
+def clear_data():
+    """Removes the ElasticSearch index data."""
+    sudo("rm -rf /data/elasticsearch/*")
+    run("echo The ElasticSearch data has been removed. Don't forget to reindex everything after you've restarted.")
 
 @task
 def wait_until_ready():
