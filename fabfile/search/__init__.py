@@ -23,23 +23,22 @@ def restart():
     stop()
     start()
 
+
 @task
-def clear_data():
-    """Removes the ElasticSearch index data."""
-    sudo("rm -rf /data/elasticsearch/*")
-    run("echo The ElasticSearch data has been removed. Don't forget to reindex everything after you've restarted.")
+def delete_index(index_name="oae"):
+    """Removes an ElasticSearch index."""
+    curl("DELETE", "http://localhost:9200/%s" % index_name, False)
+
 
 @task
 def wait_until_ready():
     """Wait until search is ready to handle requests."""
 
-    curl = "curl -s -w \"%{http_code}\" -o /dev/null http://localhost:9200/"
-
     # Keep requesting until ElasticSearch returns a 200 response
-    if not run(curl, warn_only=True) == '200':
+    if not curl("GET", "http://localhost:9200/") == '200':
         sleep(1)
 
-        while not run(curl, warn_only=True) == '200':
+        while not curl("GET", "http://localhost:9200/") == '200':
             sleep(1)
 
 
@@ -53,3 +52,11 @@ def wait_until_stopped():
 
         while not sudo("service elasticsearch status", warn_only=True).failed:
             sleep(1)
+
+
+def curl(method, url, warn_only=True):
+    """Generate a curl command to perform an HTTP method against a URL. The
+    standard output result will be the HTTP status code. This method will
+    return the Fabric run execution object."""
+    cmd = "curl -s -w \"%%{http_code}\" -o /dev/null -X%s %s" % (method, url)
+    return run(cmd, warn_only=warn_only)

@@ -1,4 +1,4 @@
-from fabric.api import runs_once, settings, task
+from fabric.api import env, runs_once, settings, task
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
 from ... import puppet, search, hilary
@@ -8,17 +8,18 @@ __all__ = ["upgrade", "upgrade_host"]
 
 @runs_once
 @task
-def upgrade(restart_app_node=True):
+def upgrade(refresh_data=False):
     """Runs through a general upgrade procedure for all known search nodes.
 
         This will:
 
             1.  Ask for a password with which to sudo. All servers must have
                 the same sudo passowrd
-            2.  Perform a git pull on the puppet node to get the latest
+            2.  Stop puppet on the search nodes
+            3.  Perform a git pull on the puppet node to get the latest
                 configuration
-            3.  Bring down the entire search cluster
-            4.  Remove the ES index data
+            4.  Delete the search index, if specified to refresh_data
+            5.  Do a full search cluster shut down
             5.  Run puppet on each search node
             6.  Bring the cluster back up
             7.  Restart an app node so the search mapping can be restored (can be skipped by setting restart_app_node to `False`)
@@ -33,28 +34,28 @@ def upgrade(restart_app_node=True):
     with settings(hosts=[cluster_hosts.puppet()], parallel=True):
         execute(puppet.git_update)
 
-    # Do a full search cluster reboot. We bring the full cluster
-    # down as a rule since ES has gossip and sometimes requires it
+    # If we're deleting the data, clear index
+    if refresh_data:
+        with settings(hosts=[cluster_hosts.search()[0]]):
+            execute(search.delete_index, index_name=search_index_name())
+
+    # Do a full search cluster reboot. We bring the full cluster down as a rule
+    # since ElasticSearch has gossip, sometimes upgrades can require that we
+    # reboot it
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(search.stop)
-
-    # Remove the ES index
-    with settings(hosts=cluster_hosts.search(), parallel=True):
-        execute(search.clear_data)
 
     # Run puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(puppet.run, force=False)
 
-    # Bring the cluster back up
-    with settings(hosts=cluster_hosts.search(), parallel=True):
-        execute(search.start)
-
-    if restart_app_node:
-        # Restart an app node so the search mapping can be reset
-        with settings(hosts=[cluster_hosts.app()[0]], parallel=True):
+    # If we deleted the search index, bounce an app server so it will recreate
+    # the index and its mappings
+    if refresh_data:
+        with settings(hosts=[cluster_hosts.app()[0]]):
             execute(hilary.stop)
             execute(hilary.start)
+            execute(hilary.wait_until_ready)
 
     # Start puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
@@ -81,3 +82,7 @@ def upgrade_host():
     execute(puppet.run, force=False)
     execute(search.restart)
     execute(puppet.start)
+
+
+def search_index_name():
+    return getattr(env, 'search_index_name', 'oae')
