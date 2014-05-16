@@ -18,11 +18,12 @@ def upgrade(refresh_data=False):
             2.  Stop puppet on the search nodes
             3.  Perform a git pull on the puppet node to get the latest
                 configuration
-            4.  Delete the search index, if specified to refresh_data
+            4.  If refresh_data was `True`, delete the search index
             5.  Do a full search cluster shut down
-            5.  Run puppet on each search node
-            6.  Bring the cluster back up
-            7.  Restart an app node so the search mapping can be restored (can be skipped by setting restart_app_node to `False`)
+            6.  Run puppet on each search node
+            7.  Bring the cluster back up
+            8.  If refresh_data was `True`, restart an app node to recreate the
+                search index
     """
     cluster_util.ensure_sudo_pass()
 
@@ -39,9 +40,9 @@ def upgrade(refresh_data=False):
         with settings(hosts=[cluster_hosts.search()[0]]):
             execute(search.delete_index, index_name=search_index_name())
 
-    # Do a full search cluster reboot. We bring the full cluster down as a rule
-    # since ElasticSearch has gossip, sometimes upgrades can require that we
-    # reboot it
+    # Bring the full cluster down. We bring the full cluster down as a rule
+    # since ElasticSearch has gossip, sometimes upgrades can require that all
+    # nodes come back gossiping on the same version
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(search.stop)
 
@@ -64,7 +65,7 @@ def upgrade(refresh_data=False):
 
 @runs_once
 @task
-def upgrade_host():
+def upgrade_host(refresh_data=False, hilary_reboot_host="pp0"):
     """Run through the general upgrade procedure for a search node, assuming
     puppet has already been updated.
 
@@ -78,9 +79,31 @@ def upgrade_host():
     """
     cluster_util.ensure_sudo_pass()
 
+    # Stop puppet on the search node
     execute(puppet.stop, force=True)
+
+    # If we're deleting the data, clear the index
+    if refresh_data:
+        execute(search.delete_index, index_name=search_index_name())
+
+    # Bring the search node down
+    execute(search.stop)
+
+    # Run puppet on the search node
     execute(puppet.run, force=False)
+
+    # Ensure the node is running again
     execute(search.restart)
+
+    # If we refreshed the data, reboot a hilary node so it can
+    # create the schema again
+    if refresh_data:
+        with settings(hosts=[hilary_reboot_host]):
+            execute(hilary.stop)
+            execute(hilary.start)
+            execute(hilary.wait_until_ready)
+
+    # Start puppet on the search node again
     execute(puppet.start)
 
 
