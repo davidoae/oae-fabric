@@ -46,9 +46,10 @@ def upgrade(refresh_data=False):
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(search.stop)
 
-    # Run puppet on the search nodes
+    # Run puppet on the search nodes and ensure they come back up
     with settings(hosts=cluster_hosts.search(), parallel=True):
         execute(puppet.run, force=False)
+        execute(search.start)
 
     # If we deleted the search index, bounce an app server so it will recreate
     # the index and its mappings
@@ -93,7 +94,7 @@ def upgrade_host(refresh_data=False, hilary_reboot_host="pp0"):
     execute(puppet.run, force=False)
 
     # Ensure the node is running again
-    execute(search.restart)
+    execute(search.start)
 
     # If we refreshed the data, reboot a hilary node so it can
     # create the schema again
