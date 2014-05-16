@@ -8,7 +8,7 @@ __all__ = ["upgrade", "upgrade_host"]
 
 @runs_once
 @task
-def upgrade(refresh_data=False):
+def upgrade(refresh_data=False, uninstall=True):
     """Runs through a general upgrade procedure for all known search nodes.
 
         This will:
@@ -18,11 +18,12 @@ def upgrade(refresh_data=False):
             2.  Stop puppet on the search nodes
             3.  Perform a git pull on the puppet node to get the latest
                 configuration
-            4.  If refresh_data was `True`, delete the search index
-            5.  Do a full search cluster shut down
-            6.  Run puppet on each search node
-            7.  Bring the cluster back up
-            8.  If refresh_data was `True`, restart an app node to recreate the
+            4.  If `refresh_data` was `True`, delete the search index
+            5.  Unless `uninstall` was `False`, uninstall ElasticSearch
+            6.  Do a full search cluster shut down
+            7.  Run puppet on each search node
+            8.  Bring the cluster back up
+            9.  If refresh_data was `True`, restart an app node to recreate the
                 search index
     """
     cluster_util.ensure_sudo_pass()
@@ -39,6 +40,11 @@ def upgrade(refresh_data=False):
     if refresh_data:
         with settings(hosts=[cluster_hosts.search()[0]]):
             execute(search.delete_index, index_name=search_index_name())
+
+    # Uninstall ElasticSearch if the option has not been disabled
+    if uninstall:
+        with settings(hosts=cluster_hosts.search(), parallel=True):
+            execute(search.uninstall)
 
     # Bring the full cluster down. We bring the full cluster down as a rule
     # since ElasticSearch has gossip, sometimes upgrades can require that all

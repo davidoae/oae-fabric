@@ -25,6 +25,12 @@ def restart():
 
 
 @task
+def uninstall():
+    """Uninstall the search package."""
+    sudo("dpkg -r elasticsearch")
+
+
+@task
 def delete_index(index_name="oae"):
     """Removes an ElasticSearch index."""
     curl("DELETE", "http://localhost:9200/%s" % index_name, False)
