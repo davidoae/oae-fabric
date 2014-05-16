@@ -72,7 +72,7 @@ def upgrade(refresh_data=False, uninstall=True):
 
 @runs_once
 @task
-def upgrade_host(refresh_data=False, hilary_reboot_host="pp0"):
+def upgrade_host(refresh_data=False, uninstall=True, hilary_reboot_host="pp0"):
     """Run through the general upgrade procedure for a search node, assuming
     puppet has already been updated.
 
@@ -92,6 +92,11 @@ def upgrade_host(refresh_data=False, hilary_reboot_host="pp0"):
     # If we're deleting the data, clear the index
     if refresh_data:
         execute(search.delete_index, index_name=search_index_name())
+
+    # Uninstall ElasticSearch if the option has not been disabled
+    if uninstall:
+        with settings(hosts=cluster_hosts.search(), parallel=True):
+            execute(search.uninstall)
 
     # Bring the search node down
     execute(search.stop)
