@@ -53,10 +53,10 @@ def wait_until_stopped():
     """Wait until search has been fully stopped."""
 
     # Keep running service status until it starts failing
-    if not sudo("service elasticsearch status", warn_only=True).failed:
+    if not curl("GET", "http://localhost:9200/").failed:
         sleep(1)
 
-        while not sudo("service elasticsearch status", warn_only=True).failed:
+        while not curl("GET", "http://localhost:9200/").failed:
             sleep(1)
 
 
