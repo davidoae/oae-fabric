@@ -95,8 +95,7 @@ def upgrade_host(refresh_data=False, uninstall=True, hilary_reboot_host="pp0"):
 
     # Uninstall ElasticSearch if the option has not been disabled
     if uninstall:
-        with settings(hosts=cluster_hosts.search(), parallel=True):
-            execute(search.uninstall)
+        execute(search.uninstall)
 
     # Bring the search node down
     execute(search.stop)
