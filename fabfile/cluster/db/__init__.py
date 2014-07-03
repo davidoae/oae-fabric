@@ -1,7 +1,7 @@
 from fabric.api import runs_once, settings, task
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
-from ... import db, puppet
+from ... import db, hilary, puppet
 
 __all__ = ["upgrade", "upgrade_host"]
 
@@ -67,6 +67,41 @@ def upgrade_host():
     execute(puppet.run, force=False)
     execute(upgrade_host_internal)
     execute(puppet.start)
+
+
+@runs_once
+@task
+def delete_data():
+    """Delete all the data from the Cassandra cluster"""
+    cluster_util.ensure_sudo_pass()
+
+    # Stop puppet on the db nodes
+    with settings(hosts=cluster_hosts.db(), parallel=True):
+        execute(puppet.stop, force=True)
+
+    # Delete data on each of the nodes in parallel
+    with settings(hosts=cluster_hosts.db(), parallel=True):
+        execute(delete_data_internal)
+
+    # Run puppet on the db nodes to recreate data dirs and start them up
+    with settings(hosts=cluster_hosts.db(), parallel=True):
+        execute(puppet.run, force=False)
+
+    # Wait until all Cassandra nodes are running to continue
+    with settings(hosts=cluster_hosts.db(), parallel=True):
+        execute(db.wait_until_ready)
+
+    # Reboot a hilary node so it can recreate the keyspace
+    with settings(hosts=[cluster_hosts.app()[0]]):
+        execute(hilary.stop)
+        execute(hilary.start)
+        execute(hilary.wait_until_ready)
+
+
+def delete_data_internal():
+    db.drain()
+    db.stop()
+    db.delete_data()
 
 
 def upgrade_host_internal():

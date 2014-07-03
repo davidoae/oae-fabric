@@ -1,5 +1,5 @@
 from time import sleep
-from fabric.api import task
+from fabric.api import env, task
 from fabric.operations import run, sudo
 
 
@@ -13,6 +13,14 @@ def start():
 def stop():
     """Stop the database service."""
     sudo("service dse stop", warn_only=True)
+
+
+@task
+def delete_data():
+    """Delete the database data."""
+    sudo("rm -rf %s" % db_data_dir())
+    sudo("rm -rf %s" % db_saved_caches_dir())
+    sudo("rm -rf %s" % db_commitlog_dir())
 
 
 @task
@@ -42,3 +50,15 @@ def upgradesstables():
 def drain():
     """Drain the commitlog of the database."""
     sudo("nodetool drain")
+
+
+def db_data_dir():
+    return getattr(env, 'db_data_dir', '/data/cassandra')
+
+
+def db_saved_caches_dir():
+    return getattr(env, 'db_saved_caches_dir', '/var/lib/cassandra/saved_caches')
+
+
+def db_commitlog_dir():
+    return getattr(env, 'db_commitlog_dir', '/var/lib/cassandra/commitlog')
