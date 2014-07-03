@@ -3,7 +3,7 @@ from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
 from ... import db, hilary, puppet
 
-__all__ = ["upgrade", "upgrade_host"]
+__all__ = ["upgrade", "upgrade_host", "delete_data"]
 
 
 @runs_once
