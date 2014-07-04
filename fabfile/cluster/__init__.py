@@ -1,1 +1,1 @@
-import db, etherpad, mq, oae, search
+import db, etherpad, mq, oae, redis, search

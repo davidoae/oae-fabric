@@ -101,8 +101,8 @@ def delete_data():
 
 
 def delete_data_internal():
-    db.drain()
     db.stop()
+    sleep(5)
     db.delete_data()
 
 

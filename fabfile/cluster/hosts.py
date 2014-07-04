@@ -4,8 +4,16 @@ def activity():
     return ["activity0", "activity1", "activity2"]
 
 
+def activity_cache():
+    return ["activity-cache0", "activity-cache1"]
+
+
 def app():
     return ["app0", "app1", "app2", "app3"]
+
+
+def cache():
+    return ["cache0", "cache1"]
 
 
 def db():
