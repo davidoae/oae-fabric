@@ -16,6 +16,6 @@ def delete_data():
     with settings(hosts=cluster_hosts.cache()[0]):
         execute(redis.delete_data)
 
-    if len(cluster_hosts.activity_cache() > 0):
+    if len(cluster_hosts.activity_cache()) > 0:
         with settings(hosts=cluster_hosts.activity_cache()[0]):
             execute(redis.delete_data)
