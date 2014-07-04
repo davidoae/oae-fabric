@@ -1,3 +1,4 @@
+from time import sleep
 from fabric.api import runs_once, settings, task
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
