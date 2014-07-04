@@ -16,6 +16,10 @@ def etherpad():
     return ["etherpad0", "etherpad1", "etherpad2"]
 
 
+def mq():
+    return ["mq0", "mq1"]
+
+
 def pp():
     return ["pp0", "pp1", "pp2"]
 

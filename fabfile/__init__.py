@@ -1,2 +1,2 @@
 import cluster
-import db, etherpad, hilary, puppet, ui
+import db, etherpad, hilary, mq, puppet, ui
