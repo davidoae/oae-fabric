@@ -95,14 +95,14 @@ def delete_data():
     # Reboot a hilary node so it can recreate the keyspace
     with settings(hosts=[cluster_hosts.app()[0]]):
         execute(hilary.stop)
-        sleep(5)
         execute(hilary.start)
+        sleep(15)
         execute(hilary.wait_until_ready)
 
 
 def delete_data_internal():
     db.stop()
-    sleep(5)
+    sleep(15)
     db.delete_data()
 
 
