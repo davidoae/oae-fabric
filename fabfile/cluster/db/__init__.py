@@ -93,7 +93,7 @@ def delete_data():
         execute(hilary.stop)
 
     # Delete data on each of the nodes
-    with settings(hosts=cluster_hosts.db(), parallel=False):
+    with settings(hosts=cluster_hosts.db(), parallel=True):
         execute(delete_data_internal)
 
     # Run puppet on the db nodes to recreate data dirs and start them up
@@ -129,8 +129,9 @@ def delete_data_internal():
     db.drain()
     db.stop()
     db.kill()
-    sleep(15)
+    sleep(5)
     db.delete_data()
+    sleep(5)
 
 
 def upgrade_host_internal():
