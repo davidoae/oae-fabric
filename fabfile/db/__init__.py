@@ -16,6 +16,12 @@ def stop():
 
 
 @task
+def kill():
+    """Kill -9 all Java processes on the system."""
+    sudo("killall -9 java", warn_only=True)
+
+
+@task
 def delete_data():
     """Delete the database data."""
     sudo("rm -rf %s" % db_data_dir())
