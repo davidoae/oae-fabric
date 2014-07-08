@@ -76,31 +76,57 @@ def delete_data():
     """Delete all the data from the Cassandra cluster"""
     cluster_util.ensure_sudo_pass()
 
-    # Stop puppet on the db nodes
-    with settings(hosts=cluster_hosts.db(), parallel=True):
+    # Gather convenience lists of hosts
+    db_hosts = cluster_hosts.db()
+    activity_hosts = cluster_hosts.activity()
+    app_hosts = cluster_hosts.app()
+    pp_hosts = cluster_hosts.pp()
+    all_hilary_stop_hosts = activity_hosts + app_hosts + pp_hosts
+    all_puppet_stop_hosts = db_hosts + activity_hosts + app_hosts + pp_hosts
+
+    # Stop puppet on the db and hilary nodes
+    with settings(hosts=all_puppet_stop_hosts, parallel=True):
         execute(puppet.stop, force=True)
 
-    # Delete data on each of the nodes in parallel
-    with settings(hosts=cluster_hosts.db(), parallel=True):
+    # Shut down all hilary nodes
+    with settings(hosts=all_hilary_stop_hosts, parallel=True):
+        execute(hilary.stop)
+
+    # Delete data on each of the nodes
+    with settings(hosts=cluster_hosts.db(), parallel=False):
         execute(delete_data_internal)
 
     # Run puppet on the db nodes to recreate data dirs and start them up
-    with settings(hosts=cluster_hosts.db(), parallel=True):
+    with settings(hosts=cluster_hosts.db(), parallel=False):
         execute(puppet.run, force=False)
 
     # Wait until all Cassandra nodes are running to continue
     with settings(hosts=cluster_hosts.db(), parallel=True):
         execute(db.wait_until_ready)
+        sleep(5)
 
-    # Reboot a hilary node so it can recreate the keyspace
-    with settings(hosts=[cluster_hosts.app()[0]]):
-        execute(hilary.stop)
+    # Start one of the hilary nodes so it can create the keyspace
+    with settings(hosts=[all_hilary_stop_hosts[0]]):
         execute(hilary.start)
+
+        # Give sufficient time for Hilary to create the keyspace. If a request is made to Cassandra
+        # before the keyspace is created, then it can thwart the app startup process
         sleep(15)
+
         execute(hilary.wait_until_ready)
+
+    # Start the remainder of the hilary nodes
+    with settings(hosts=all_hilary_stop_hosts[1:], parallel=True):
+        execute(hilary.start)
+        execute(hilary.wait_until_ready)
+
+    # Start puppet on all the nodes
+    with settings(hosts=all_puppet_stop_hosts, parallel=True):
+        execute(puppet.start)
 
 
 def delete_data_internal():
+    db.drain()
     db.stop()
     sleep(15)
     db.delete_data()
