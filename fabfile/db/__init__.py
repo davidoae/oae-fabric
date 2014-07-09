@@ -45,6 +45,10 @@ def wait_until_ready():
         while run(cqlsh, warn_only=True).failed:
             sleep(1)
 
+    # Even after cqlsh is successful, we need to wait a while before the
+    # server is available for queries
+    sleep(15)
+
 
 @task
 def upgradesstables():
