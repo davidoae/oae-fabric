@@ -1,2 +1,2 @@
 import cluster
-import db, etherpad, hilary, mq, puppet, redis, search, ui
+import apt, db, etherpad, hilary, mq, puppet, redis, search, ui

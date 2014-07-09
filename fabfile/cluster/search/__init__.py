@@ -1,7 +1,7 @@
 from fabric.api import env, runs_once, settings, task
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
-from ... import puppet, search, hilary
+from ... import apt, puppet, search, hilary
 
 __all__ = ["upgrade", "upgrade_host"]
 
@@ -45,6 +45,7 @@ def upgrade(delete_index=False, rebuild_index=False, uninstall=True):
     if uninstall:
         with settings(hosts=cluster_hosts.search(), parallel=True):
             execute(search.uninstall)
+            execute(apt.update)
 
     # Bring the full cluster down. We bring the full cluster down as a rule
     # since ElasticSearch has gossip, sometimes upgrades can require that all
