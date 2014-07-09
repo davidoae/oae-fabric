@@ -103,7 +103,9 @@ def delete_data():
     # Wait until all Cassandra nodes are running to continue
     with settings(hosts=cluster_hosts.db(), parallel=True):
         execute(db.wait_until_ready)
-        sleep(5)
+
+    # The Cassandra nodes still do stupid things :( Wait for more time
+    sleep(30)
 
     # Start one of the hilary nodes so it can create the keyspace
     with settings(hosts=[all_hilary_stop_hosts[0]]):
