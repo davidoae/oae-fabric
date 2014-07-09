@@ -32,16 +32,21 @@ def version():
 
 
 @task
-def wait_until_ready():
+def wait_until_ready(max_retries=-1):
     """Wait until the application server is ready to handle requests."""
     curl = "curl -s -w \"%%{http_code}\" -H\"Host: %s\" -o /dev/null http://%s:%s/api/me" % (check_host_header(), check_host(), check_port())
 
-    # See if /api/me returns the proper output
+    # Wait until /api/me returns the proper output
     if not run(curl, warn_only=True) == '200':
         sleep(1)
+        num_retries = 0
 
-        while not run(curl, warn_only=True) == '200':
+        while (max_retries == -1 or num_retries < max_retries) and not run(curl, warn_only=True) == '200':
+            num_retries += 1
             sleep(1)
+
+    # Let the consumer know if the server started up within the proper amount of retries
+    return (run(curl, warn_only=True) == '200')
 
 
 def hilary_dir():

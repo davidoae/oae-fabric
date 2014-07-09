@@ -104,18 +104,10 @@ def delete_data():
     with settings(hosts=cluster_hosts.db(), parallel=True):
         execute(db.wait_until_ready)
 
-    # The Cassandra nodes still do stupid things :( Wait for more time
-    sleep(30)
-
     # Start one of the hilary nodes so it can create the keyspace
     with settings(hosts=[all_hilary_stop_hosts[0]]):
         execute(hilary.start)
-
-        # Give sufficient time for Hilary to create the keyspace. If a request is made to Cassandra
-        # before the keyspace is created, then it can thwart the app startup process
-        sleep(15)
-
-        execute(hilary.wait_until_ready)
+        execute(hilary_wait_until_ready_internal)
 
     # Start the remainder of the hilary nodes
     with settings(hosts=all_hilary_stop_hosts[1:], parallel=True):
@@ -131,9 +123,7 @@ def delete_data_internal():
     db.drain()
     db.stop()
     db.kill()
-    sleep(5)
     db.delete_data()
-    sleep(5)
 
 
 def upgrade_host_internal():
@@ -142,3 +132,9 @@ def upgrade_host_internal():
     db.start()
     db.wait_until_ready()
     db.upgradesstables()
+
+
+def hilary_wait_until_ready_internal():
+    while not hilary.wait_until_ready(max_retries=15):
+        hilary.stop()
+        hilary.start()
