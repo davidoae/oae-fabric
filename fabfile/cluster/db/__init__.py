@@ -4,7 +4,7 @@ from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
 from ... import db, hilary, puppet
 
-__all__ = ["upgrade", "upgrade_host", "delete_data"]
+__all__ = ["upgrade", "upgrade_host"]  # , "delete_data"]
 
 
 @runs_once
@@ -70,53 +70,53 @@ def upgrade_host():
     execute(puppet.start)
 
 
-@runs_once
-@task
-def delete_data():
-    """Delete all the data from the Cassandra cluster"""
-    cluster_util.ensure_sudo_pass()
-
-    # Gather convenience lists of hosts
-    db_hosts = cluster_hosts.db()
-    activity_hosts = cluster_hosts.activity()
-    app_hosts = cluster_hosts.app()
-    pp_hosts = cluster_hosts.pp()
-    all_hilary_stop_hosts = activity_hosts + app_hosts + pp_hosts
-    all_puppet_stop_hosts = db_hosts + activity_hosts + app_hosts + pp_hosts
-
-    # Stop puppet on the db and hilary nodes
-    with settings(hosts=all_puppet_stop_hosts, parallel=True):
-        execute(puppet.stop, force=True)
-
-    # Shut down all hilary nodes
-    with settings(hosts=all_hilary_stop_hosts, parallel=True):
-        execute(hilary.stop)
-
-    # Delete data on each of the nodes
-    with settings(hosts=cluster_hosts.db(), parallel=True):
-        execute(delete_data_internal)
-
-    # Run puppet on the db nodes to recreate data dirs and start them up
-    with settings(hosts=cluster_hosts.db(), parallel=False):
-        execute(puppet.run, force=False)
-
-    # Wait until all Cassandra nodes are running to continue
-    with settings(hosts=cluster_hosts.db(), parallel=True):
-        execute(db.wait_until_ready)
-
-    # Start one of the hilary nodes so it can create the keyspace
-    with settings(hosts=[all_hilary_stop_hosts[0]]):
-        execute(hilary.start)
-        execute(hilary_wait_until_ready_internal)
-
-    # Start the remainder of the hilary nodes
-    with settings(hosts=all_hilary_stop_hosts[1:], parallel=True):
-        execute(hilary.start)
-        execute(hilary.wait_until_ready)
-
-    # Start puppet on all the nodes
-    with settings(hosts=all_puppet_stop_hosts, parallel=True):
-        execute(puppet.start)
+# @runs_once
+# @task
+# def delete_data():
+#     """Delete all the data from the Cassandra cluster"""
+#     cluster_util.ensure_sudo_pass()
+#
+#     # Gather convenience lists of hosts
+#     db_hosts = cluster_hosts.db()
+#     activity_hosts = cluster_hosts.activity()
+#     app_hosts = cluster_hosts.app()
+#     pp_hosts = cluster_hosts.pp()
+#     all_hilary_stop_hosts = activity_hosts + app_hosts + pp_hosts
+#     all_puppet_stop_hosts = db_hosts + activity_hosts + app_hosts + pp_hosts
+#
+#     # Stop puppet on the db and hilary nodes
+#     with settings(hosts=all_puppet_stop_hosts, parallel=True):
+#         execute(puppet.stop, force=True)
+#
+#     # Shut down all hilary nodes
+#     with settings(hosts=all_hilary_stop_hosts, parallel=True):
+#         execute(hilary.stop)
+#
+#     # Delete data on each of the nodes
+#     with settings(hosts=cluster_hosts.db(), parallel=True):
+#         execute(delete_data_internal)
+#
+#     # Run puppet on the db nodes to recreate data dirs and start them up
+#     with settings(hosts=cluster_hosts.db(), parallel=False):
+#         execute(puppet.run, force=False)
+#
+#     # Wait until all Cassandra nodes are running to continue
+#     with settings(hosts=cluster_hosts.db(), parallel=True):
+#         execute(db.wait_until_ready)
+#
+#     # Start one of the hilary nodes so it can create the keyspace
+#     with settings(hosts=[all_hilary_stop_hosts[0]]):
+#         execute(hilary.start)
+#         execute(hilary_wait_until_ready_internal)
+#
+#     # Start the remainder of the hilary nodes
+#     with settings(hosts=all_hilary_stop_hosts[1:], parallel=True):
+#         execute(hilary.start)
+#         execute(hilary.wait_until_ready)
+#
+#     # Start puppet on all the nodes
+#     with settings(hosts=all_puppet_stop_hosts, parallel=True):
+#         execute(puppet.start)
 
 
 def delete_data_internal():
