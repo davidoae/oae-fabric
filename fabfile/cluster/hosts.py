@@ -19,6 +19,8 @@ def cache():
 def db():
     return ["db0", "db1", "db2"]
 
+def monitor():
+    return "monitor"
 
 def etherpad():
     return ["etherpad0", "etherpad1", "etherpad2"]
