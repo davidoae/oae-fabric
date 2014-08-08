@@ -80,7 +80,7 @@ def upgrade_host_internal():
     puppet.run()
     db.start()
     db.wait_until_ready()
-    db.upgradesstables()
+#    db.upgradesstables()
 
 
 def hilary_wait_until_ready_internal():
