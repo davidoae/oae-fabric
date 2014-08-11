@@ -100,7 +100,7 @@ def restore_backups():
         execute(puppet.stop, force=True)
         execute(db.stop)
 
-    with settings(hosts=cluster_hosts.db(), parallel=True)
+    with settings(hosts=cluster_hosts.db(), parallel=True):
         execute(db.delete_data)
         execute(db.restore_backups)
         execute(db.start)
