@@ -91,9 +91,9 @@ def restore_backups():
     """
     cluster_util.ensure_sudo_pass()
 
-    prompt("The AWS key ID", key="backups_aws_key_id")
-    prompt("The AWS secret access key", key="backups_aws_secret_access_key")
-    prompt("The AWS encrypt key", key="backups_encrypt_key")
+    prompt("The AWS key ID:", key="backups_aws_key_id")
+    prompt("The AWS secret access key:", key="backups_aws_secret_access_key")
+    prompt("The AWS encrypt key:", key="backups_encrypt_key")
 
     # Stop puppet and DSE on the db nodes
     with settings(hosts=cluster_hosts.db(), parallel=True):
@@ -119,8 +119,8 @@ def hilary_wait_until_ready_internal():
         hilary.start()
 
 def restore_backups_internal():
-    db.delete_data
-    db.restore_backups
-    db.start
-    db.wait_until_ready
-    puppet.start
+    db.delete_data()
+    db.restore_backups()
+    db.start()
+    db.wait_until_ready()
+    puppet.start()
