@@ -1,5 +1,5 @@
 from time import sleep
-from fabric.api import runs_once, settings, task
+from fabric.api import env, runs_once, settings, task
 from fabric.operations import prompt
 from fabric.tasks import execute
 from getpass import getpass
