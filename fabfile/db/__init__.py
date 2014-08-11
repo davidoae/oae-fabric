@@ -43,7 +43,7 @@ def restore_backups():
     with shell_env(AWS_ACCESS_KEY_ID=backups_aws_key_id(), AWS_SECRET_ACCESS_KEY=backups_aws_secret_access_key()):
         encrypt_key = backups_encrypt_key()
         bucket_name = backups_bucket_name()
-        sudo("echo duplicity --s3-use-new-style --encrypt-key=%s restore s3+http://%s/%s/cassandra /data/cassandra/data" % (encrypt_key, bucket_name, env.host))
+        sudo("duplicity --s3-use-new-style --encrypt-key=%s restore s3+http://%s/%s/cassandra /data/cassandra/data" % (encrypt_key, bucket_name, env.host))
 
 
 @task

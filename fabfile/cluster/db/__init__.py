@@ -101,10 +101,7 @@ def restore_backups():
         execute(db.stop)
 
     with settings(hosts=cluster_hosts.db(), parallel=True):
-        execute(db.delete_data)
-        execute(db.restore_backups)
-        execute(db.start)
-        execute(puppet.start)
+        execute(restore_backups_internal)
 
 
 def upgrade_host_internal():
@@ -120,3 +117,10 @@ def hilary_wait_until_ready_internal():
     while not hilary.wait_until_ready(max_retries=15):
         hilary.stop()
         hilary.start()
+
+def restore_backups_internal():
+    db.delete_data
+    db.restore_backups
+    db.start
+    db.wait_until_ready
+    puppet.start
