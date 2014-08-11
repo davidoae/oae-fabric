@@ -25,7 +25,7 @@ def kill():
 @task
 def delete_data():
     """Delete the database data."""
-    sudo("rm -rf %s" % db_data_dir())
+    sudo("rm -rf %s/*" % db_data_dir())
     sudo("rm -rf %s" % db_saved_caches_dir())
     sudo("rm -rf %s" % db_commitlog_dir())
 
