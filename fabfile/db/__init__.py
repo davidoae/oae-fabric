@@ -1,5 +1,6 @@
 from time import sleep
 from fabric.api import env, task
+from fabric.context_managers import shell_env
 from fabric.operations import run, sudo
 
 
@@ -27,6 +28,22 @@ def delete_data():
     sudo("rm -rf %s" % db_data_dir())
     sudo("rm -rf %s" % db_saved_caches_dir())
     sudo("rm -rf %s" % db_commitlog_dir())
+
+
+@task
+def install_duplicity():
+    """Install duplicity"""
+    sudo("apt-get install -y duplicity python-pip")
+    sudo("pip install boto")
+
+
+@task
+def restore_backups():
+    """Restore the backups from S3 with duplicity"""
+    with shell_env(AWS_ACCESS_KEY_ID=backups_aws_key_id(), AWS_SECRET_ACCESS_KEY=backups_aws_secret_access_key())
+        encrypt_key = backups_encrypt_key()
+        bucket_name = backups_bucket_name()
+        sudo("echo duplicity --s3-use-new-style --encrypt-key=%s restore s3+http://%s/%s/cassandra /data/cassandra/data", (encrypt_key, bucket_name, env.host))
 
 
 @task
@@ -72,3 +89,16 @@ def db_saved_caches_dir():
 
 def db_commitlog_dir():
     return getattr(env, 'db_commitlog_dir', '/var/lib/cassandra/commitlog')
+
+
+def backups_bucket_name():
+    return getattr(env, 'backups_bucket_name', 'oae-cassandra-backup')
+
+def backups_aws_key_id():
+    return getattr(env, 'backups_aws_key_id', '')
+
+def backups_aws_secret_access_key():
+    return getattr(env, 'backups_aws_secret_access_key', '')
+
+def backups_encrypt_key():
+    return getattr(env, 'backups_encrypt_key', '')

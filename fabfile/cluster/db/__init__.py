@@ -1,10 +1,11 @@
 from time import sleep
 from fabric.api import runs_once, settings, task
+from fabric.operations import prompt
 from fabric.tasks import execute
 from .. import hosts as cluster_hosts, util as cluster_util
 from ... import db, hilary, puppet
 
-__all__ = ["upgrade", "upgrade_host"]  # , "delete_data"]
+__all__ = ["upgrade", "upgrade_host", "restore_backups"]  # , "delete_data"]
 
 
 @runs_once
@@ -35,8 +36,8 @@ def upgrade():
         execute(puppet.stop)
 
     # Pull the updated puppet configuration
-#    with settings(hosts=[cluster_hosts.puppet()], parallel=True):
-#        execute(puppet.git_update)
+    with settings(hosts=[cluster_hosts.puppet()], parallel=True):
+        execute(puppet.git_update)
 
     # Upgrade each db node sequentially
     with settings(hosts=cluster_hosts.db(), parallel=False):
@@ -73,6 +74,38 @@ def upgrade_host():
     execute(upgrade_host_internal)
     execute(puppet.start)
 
+@runs_once
+@task
+def restore_backups():
+    """Run through the S3 backup restore procedure
+
+        This will:
+
+            1.  Ask for a password with which to sudo
+            2.  Ask for the AWS public and secret key
+            3.  Ask for the public key id that was used to encrypt the backups
+            2.  Ensure the necessary duplicity tooling is installed
+            3.  Forcefully stop any current puppet runs
+            4.  Stop dse
+            5.  Remove everything under /data/cassandra
+    """
+    cluster_util.ensure_sudo_pass()
+
+    prompt("The AWS key ID", key="backups_aws_key_id")
+    prompt("The AWS secret access key", key="backups_aws_secret_access_key")
+    prompt("The AWS encrypt key", key="backups_encrypt_key")
+
+    # Stop puppet and DSE on the db nodes
+    with settings(hosts=cluster_hosts.db(), parallel=True):
+        execute(puppet.stop, force=True)
+        execute(db.stop)
+
+    with settings(hosts=cluster_hosts.db(), parallel=True)
+        execute(db.delete_data)
+        execute(db.restore_backups)
+        execute(db.start)
+        execute(puppet.start)
+
 
 def upgrade_host_internal():
     db.drain()
@@ -80,7 +113,7 @@ def upgrade_host_internal():
     puppet.run()
     db.start()
     db.wait_until_ready()
-#    db.upgradesstables()
+    db.upgradesstables()
 
 
 def hilary_wait_until_ready_internal():
