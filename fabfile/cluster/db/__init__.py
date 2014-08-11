@@ -2,6 +2,7 @@ from time import sleep
 from fabric.api import runs_once, settings, task
 from fabric.operations import prompt
 from fabric.tasks import execute
+from getpass import getpass
 from .. import hosts as cluster_hosts, util as cluster_util
 from ... import db, hilary, puppet
 
@@ -92,8 +93,9 @@ def restore_backups():
     cluster_util.ensure_sudo_pass()
 
     prompt("The AWS key ID:", key="backups_aws_key_id")
-    prompt("The AWS secret access key:", key="backups_aws_secret_access_key")
+    env.backups_aws_secret_access_key = getpass('The AWS secret access key: ')
     prompt("The AWS encrypt key:", key="backups_encrypt_key")
+    env.backups_encrypt_passphrase = getpass('The gnuPG passphrase: ')
 
     # Stop puppet and DSE on the db nodes
     with settings(hosts=cluster_hosts.db(), parallel=True):
