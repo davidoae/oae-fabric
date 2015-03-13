@@ -94,8 +94,9 @@ def restore_backups():
 
     prompt("The AWS key ID:", key="backups_aws_key_id")
     env.backups_aws_secret_access_key = getpass('The AWS secret access key: ')
-    prompt("The AWS encrypt key:", key="backups_encrypt_key")
+    prompt("The GPG encrypt key:", key="backups_encrypt_key")
     env.backups_encrypt_passphrase = getpass('The gnuPG passphrase: ')
+    prompt("The S3 bucket:", key="backups_bucket_name")
 
     # Stop puppet and DSE on the db nodes
     with settings(hosts=cluster_hosts.db(), parallel=True):
