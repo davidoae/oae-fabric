@@ -58,7 +58,7 @@ def run(force=True):
         execute(stop, force=True)
 
     # Start an adhoc puppet run
-    sudo('puppet agent -t', warn_only=True)
+    sudo('puppet agent --onetime --verbose --no-daemonize', warn_only=True)
 
     # Start puppet back up if we forcefully stopped it
     if force:
