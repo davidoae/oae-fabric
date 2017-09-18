@@ -16,17 +16,14 @@ def upgrade():
 
         This will:
 
-            1.  Ask for a password with which to sudo. All servers must have
-                the same sudo passowrd
-            2.  Perform a git pull on the puppet node to get the latest
+            1.  Perform a git pull on the puppet node to get the latest
                 configuration
-            3.  Run puppet on each db node
-            4.  On each db node sequentially:
+            2.  Run puppet on each db node
+            3.  On each db node sequentially:
                     a. Run nodetool drain
                     b. Restart dse
                     c. Run nodetool upgradesstables
     """
-    cluster_util.ensure_sudo_pass()
 
     # Stop puppet on the db nodes
     with settings(hosts=cluster_hosts.db(), parallel=True):
@@ -62,14 +59,12 @@ def upgrade_host():
 
         This will:
 
-            1.  Ask for a password with which to sudo
-            2.  Forcefully stop any current puppet runs
-            3.  Run puppet on the node
-            4.  Run nodetool drain
-            5.  Restart dse
-            6.  Run nodetool upgradesstables
+            1.  Forcefully stop any current puppet runs
+            2.  Run puppet on the node
+            3.  Run nodetool drain
+            4.  Restart dse
+            5.  Run nodetool upgradesstables
     """
-    cluster_util.ensure_sudo_pass()
 
     execute(puppet.stop, force=True)
     execute(upgrade_host_internal)
@@ -82,15 +77,13 @@ def restore_backups():
 
         This will:
 
-            1.  Ask for a password with which to sudo
-            2.  Ask for the AWS public and secret key
-            3.  Ask for the public key id that was used to encrypt the backups
-            2.  Ensure the necessary duplicity tooling is installed
-            3.  Forcefully stop any current puppet runs
-            4.  Stop dse
-            5.  Remove everything under /data/cassandra
+            1.  Ask for the AWS public and secret key
+            2.  Ask for the public key id that was used to encrypt the backups
+            3.  Ensure the necessary duplicity tooling is installed
+            4.  Forcefully stop any current puppet runs
+            5.  Stop dse
+            6.  Remove everything under /data/cassandra
     """
-    cluster_util.ensure_sudo_pass()
 
     prompt("The AWS key ID:", key="backups_aws_key_id")
     env.backups_aws_secret_access_key = getpass('The AWS secret access key: ')

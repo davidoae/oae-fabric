@@ -1,6 +1,6 @@
 from time import sleep
 from fabric.api import cd, task
-from fabric.operations import sudo
+from fabric.operations import run
 from fabric.tasks import execute
 
 
@@ -14,7 +14,7 @@ def stop(force=True):
     """
 
     # Stop the service
-    sudo('service puppet stop')
+    run('service puppet stop')
 
     # Stopping the service will only stop new runs from happening. If we're
     # forcing a stop, we want to quite and in-progress runs as well
@@ -22,25 +22,25 @@ def stop(force=True):
 
         # pgrep puppet -c returns the number of puppet processes that are
         # running. If it isn't 0, we need to pkill them
-        if not sudo('pgrep puppet -c', warn_only=True).startswith("0"):
-            sudo('pkill puppet', warn_only=True)
+        if not run('pgrep puppet -c', warn_only=True).startswith("0"):
+            run('pkill puppet', warn_only=True)
             sleep(10)
 
             # If 5 seconds wasn't enough to kill the active runs, continue
             # pkill'ing and waiting 1 second each iteration
-            while not sudo('pgrep puppet -c', warn_only=True).startswith("0"):
+            while not run('pgrep puppet -c', warn_only=True).startswith("0"):
                 print 'Puppet is still running, trying to kill it again'
-                sudo('pkill puppet', warn_only=True)
+                run('pkill puppet', warn_only=True)
                 sleep(5)
 
         # Ensure that lock file is removed so puppet can be run
-        sudo('rm /var/lib/puppet/state/agent_catalog_run.lock', warn_only=True)
+        run('rm /var/lib/puppet/state/agent_catalog_run.lock', warn_only=True)
 
 
 @task
 def start():
     """Start the puppet agent service."""
-    sudo('service puppet start')
+    run('service puppet start')
 
 
 @task
@@ -58,11 +58,11 @@ def run(force=True):
         execute(stop, force=True)
 
     # Start an adhoc puppet run
-    sudo('puppet agent --onetime --verbose --no-daemonize', warn_only=True)
+    run('puppet agent --onetime --verbose --no-daemonize', warn_only=True)
 
     # Start puppet back up if we forcefully stopped it
     if force:
-        sudo('service puppet start')
+        run('service puppet start')
 
 
 @task
@@ -70,4 +70,4 @@ def git_update():
     """Pull the updated code from git."""
 
     with cd('/etc/puppet/puppet-hilary'):
-        sudo('git pull')
+        run('git pull')

@@ -10,7 +10,6 @@ __all__ = ["reboot", "upgrade", "upgrade_host"]
 @task
 def reboot():
     """Reboot all the etherpad servers."""
-    cluster_util.ensure_sudo_pass()
 
     with settings(hosts=cluster_hosts.etherpad()):
         execute(etherpad.stop)
@@ -24,11 +23,9 @@ def upgrade():
 
        This will:
 
-        1.  Ask for a password with which to sudo. All servers must have the
-            same sudo passowrd
-        2.  Perform a git pull on the puppet node to get the latest
+        1.  Perform a git pull on the puppet node to get the latest
             configuration
-        3.  On each etherpad host:
+        2.  On each etherpad host:
               a. Forcefully stop puppet on the etherpad hosts and cancel any
                  runs that are currently happening
               b. Stop the etherpad services
@@ -37,7 +34,6 @@ def upgrade():
                  repopulate it with the configured (updated) version of the
                  package
     """
-    cluster_util.ensure_sudo_pass()
 
     # Pull the updated puppet data
     with settings(hosts=[cluster_hosts.puppet()]):
@@ -55,17 +51,14 @@ def upgrade_host(parallel=True):
 
        This will:
 
-        1.  Ask for a password with which to sudo. All servers must have the
-            same sudo passowrd.
-        2.  Forcefully stop puppet and any runs that are currently happening
-        3.  Stop the etherpad service
-        4.  Back up the hilary app dir to /tmp/hilary_backup
-        5.  Back up the ui app dir to /tmp/ui_backup
-        6.  Run puppet, which should notice the missing directories and
+        1.  Forcefully stop puppet and any runs that are currently happening
+        2.  Stop the etherpad service
+        3.  Back up the hilary app dir to /tmp/hilary_backup
+        4.  Back up the ui app dir to /tmp/ui_backup
+        5.  Run puppet, which should notice the missing directories and
             repopulate them with the configured (updated) version of the
             packages
     """
-    cluster_util.ensure_sudo_pass()
 
     with settings(parallel=(parallel != "False")):
         execute(upgrade_host_internal)

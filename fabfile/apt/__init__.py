@@ -1,8 +1,8 @@
 from fabric.api import task
-from fabric.operations import sudo
+from fabric.operations import run
 
 
 @task
 def update():
     """Update the aptitude cache."""
-    sudo("apt-get update")
+    run("apt-get update")

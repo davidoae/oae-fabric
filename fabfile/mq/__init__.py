@@ -1,22 +1,22 @@
 from fabric.api import task
-from fabric.operations import sudo
+from fabric.operations import run
 
 
 @task
 def start():
     """Start the RabbitMQ service."""
-    sudo("service rabbitmq start")
+    run("service rabbitmq start")
 
 
 @task
 def stop():
     """Stop the RabbitMQ service."""
-    sudo("service rabbitmq stop")
+    run("service rabbitmq stop")
 
 
 @task
 def delete_data():
     """Delete the RabbitMQ queues and their messages."""
-    sudo("rabbitmqctl stop_app")
-    sudo("rabbitmqctl reset")
-    sudo("rabbitmqctl start_app")
+    run("rabbitmqctl stop_app")
+    run("rabbitmqctl reset")
+    run("rabbitmqctl start_app")

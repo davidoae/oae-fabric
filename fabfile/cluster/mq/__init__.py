@@ -10,7 +10,6 @@ __all__ = ["delete_data"]
 @task
 def delete_data():
     """Delete all task queues and contained messages from the MQ instance."""
-    cluster_util.ensure_sudo_pass()
 
     # Delete the queues
     with settings(hosts=cluster_hosts.mq()[0]):

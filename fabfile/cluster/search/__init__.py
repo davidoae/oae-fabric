@@ -13,20 +13,17 @@ def upgrade(delete_index=False, rebuild_index=False, uninstall=True):
 
         This will:
 
-            1.  Ask for a password with which to sudo. All servers must have
-                the same sudo passowrd
-            2.  Stop puppet on the search nodes
-            3.  Perform a git pull on the puppet node to get the latest
+            1.  Stop puppet on the search nodes
+            2.  Perform a git pull on the puppet node to get the latest
                 configuration
-            4.  If `delete_index` was `True`, delete the search index
-            5.  Unless `uninstall` was `False`, uninstall ElasticSearch
-            6.  Do a full search cluster shut down
-            7.  Run puppet on each search node
-            8.  Bring the cluster back up
-            9.  If `rebuild_index` was `True`, restart an app node to recreate the
+            3.  If `delete_index` was `True`, delete the search index
+            4.  Unless `uninstall` was `False`, uninstall ElasticSearch
+            5.  Do a full search cluster shut down
+            6.  Run puppet on each search node
+            7.  Bring the cluster back up
+            8.  If `rebuild_index` was `True`, restart an app node to recreate the
                 search index. This will not reindex all data, though
     """
-    cluster_util.ensure_sudo_pass()
 
     # Stop puppet on the search nodes
     with settings(hosts=cluster_hosts.search(), parallel=True):
@@ -80,19 +77,17 @@ def upgrade_host(delete_index=False, rebuild_index=False, uninstall=True,
 
         This will:
 
-            1.  Ask for a password with which to sudo
-            2.  Forcefully stop any current puppet runs
-            3.  If `delete_index` was enabled, the search index will be deleted
-            4.  If `uninstall` was not disabled, uninstall ElasticSearch
-            5.  Ensure the search service is stopped
-            6.  Run puppet to re-install and start the search service
-            7.  Ensure the search service is started
-            8.  If `rebuild_index` was enabled, the Hilary node as set by
+            1.  Forcefully stop any current puppet runs
+            2.  If `delete_index` was enabled, the search index will be deleted
+            3.  If `uninstall` was not disabled, uninstall ElasticSearch
+            4.  Ensure the search service is stopped
+            5.  Run puppet to re-install and start the search service
+            6.  Ensure the search service is started
+            7.  If `rebuild_index` was enabled, the Hilary node as set by
                 `hilary_reboot_host` will have its Hilary service restarted to
                 let it rebuild the search index
-            9.  Start the puppet service
+            8.  Start the puppet service
     """
-    cluster_util.ensure_sudo_pass()
 
     # Stop puppet on the search node
     execute(puppet.stop, force=True)

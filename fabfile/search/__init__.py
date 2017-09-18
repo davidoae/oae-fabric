@@ -1,19 +1,19 @@
 from time import sleep
 from fabric.api import task
-from fabric.operations import run, sudo
+from fabric.operations import run, run
 
 
 @task
 def start():
     """Start the search service."""
-    sudo("service elasticsearch start", warn_only=True)
+    run("service elasticsearch start", warn_only=True)
     wait_until_ready()
 
 
 @task
 def stop():
     """Stop the search service."""
-    sudo("service elasticsearch stop", warn_only=True)
+    run("service elasticsearch stop", warn_only=True)
     wait_until_stopped()
 
 
@@ -27,7 +27,7 @@ def restart():
 @task
 def uninstall():
     """Uninstall the search package."""
-    sudo("dpkg -r elasticsearch")
+    run("dpkg -r elasticsearch")
 
 
 @task
